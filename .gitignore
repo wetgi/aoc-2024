@@ -1,0 +1,9 @@
+# C# Build objects
+[Bb]in/
+[Oo]bj/
+
+# Visual Studio User Prefs
+.vs/
+
+# Ignore input files, they will be re-downloaded
+*.input.txt
