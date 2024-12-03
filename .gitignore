@@ -5,5 +5,5 @@
 # Visual Studio User Prefs
 .vs/
 
-# Ignore input files, they will be re-downloaded
-*.input.txt
+# Ignore input files
+**/input.txt
