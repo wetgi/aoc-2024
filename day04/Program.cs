@@ -1,23 +1,18 @@
-using System.Text.RegularExpressions;
-
 string[] puzzle = File.ReadAllLines("input.txt");
 
-const string pattern1 = "XMAS";
-const string pattern2 = "SAMX";
-
-string[] ExtractSubmatrix(int x, int y)
+string[] ExtractSubmatrix(int x, int y, int size = 4)
 {
-    string[] matrix = new string[4];
-    for (int i = 0; i < 4; i++)
+    string[] matrix = new string[size];
+    for (int i = 0; i < size; i++)
     {
-        matrix[i] = "0000";
+        matrix[i] = new string('0', size);
     }
 
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < size; i++)
     {
         if (y + i >= 0 && y + i < puzzle.Length)
         {
-            for (int j = 0; j < 4; j++)
+            for (int j = 0; j < size; j++)
             {
                 if (x + j >= 0 && x + j < puzzle[y + i].Length)
                 {
@@ -33,15 +28,12 @@ string[] ExtractSubmatrix(int x, int y)
 int CountPatternsInMatrix(string[] matrix, int row, int col)
 {
     int count = 0;
+    string[] patterns = ["XMAS", "SAMX"];
 
     // horizontal
     if (row % 4 == 0)
     {
-        for (int i = 0; i < matrix.Length; i++)
-        {
-            count += Regex.Matches(matrix[i], pattern1).Count;
-            count += Regex.Matches(matrix[i], pattern2).Count;
-        }
+        count += matrix.Count(line => patterns.Contains(line));
     }
 
     // vertical
@@ -49,31 +41,56 @@ int CountPatternsInMatrix(string[] matrix, int row, int col)
     {
         for (int i = 0; i < matrix[0].Length; i++)
         {
-            string vertical = "";
-            for (int j = 0; j < matrix.Length; j++)
+            string vertical = new(matrix.Select(line => line[i]).ToArray());
+            if (patterns.Contains(vertical))
             {
-                vertical += matrix[j][i];
+                count += 1;
             }
-
-            count += Regex.Matches(vertical, pattern1).Count;
-            count += Regex.Matches(vertical, pattern2).Count;
         }
     }
 
     // diagonal
-    string diagonal1 = matrix[0][0].ToString() + matrix[1][1] + matrix[2][2] + matrix[3][3];
-    string diagonal2 = matrix[0][3].ToString() + matrix[1][2] + matrix[2][1] + matrix[3][0];
-    count += Regex.Matches(diagonal1, pattern1).Count;
-    count += Regex.Matches(diagonal1, pattern2).Count;
-    count += Regex.Matches(diagonal2, pattern1).Count;
-    count += Regex.Matches(diagonal2, pattern2).Count;
+    string[] diagonals = [
+        new([matrix[0][0], matrix[1][1], matrix[2][2], matrix[3][3]]),
+        new([matrix[0][3], matrix[1][2], matrix[2][1], matrix[3][0]])
+    ];
+    count += diagonals.Count(diagonal => patterns.Contains(diagonal));
+
+    return count;
+}
+
+int CountMas(string[] matrix)
+{
+    int count = 0;
+    string[] patterns = ["MAS", "SAM"];
+
+    // diagonal
+    string[] diagonals = [
+        new([matrix[0][0], matrix[1][1], matrix[2][2]]),
+        new([matrix[0][2], matrix[1][1], matrix[2][0]])
+    ];
+
+
+    // incremet count the two patterns are found in the diagonals
+    if (diagonals.Count(diagonal => patterns.Contains(diagonal)) == 2)
+    {
+        count += 1;
+    }
 
     return count;
 }
 
 
+
 // for every position in the puzzle, get the matrix and count the patterns
-int total = puzzle.SelectMany((line, y) => line.Select((_, x) => new { x, y }))
+int partOne = puzzle.SelectMany((line, y) => line.Select((_, x) => new { x, y }))
                   .Sum(pos => CountPatternsInMatrix(ExtractSubmatrix(pos.x, pos.y), pos.y, pos.x));
 
-Console.WriteLine(total);
+
+int partTwo = puzzle.SelectMany((line, y) => line.Select((_, x) => new { x, y }))
+                  .Sum(pos => CountMas(ExtractSubmatrix(pos.x, pos.y, 3)));
+
+
+
+Console.WriteLine(partOne);
+Console.WriteLine(partTwo);
